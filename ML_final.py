@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
-
-
 # import function & setting
 
 import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-
-# In[21]:
-
 
 # import data
 
@@ -27,9 +20,6 @@ display(train)
 display(test)
 
 
-# In[19]:
-
-
 # feature info
 
 """
@@ -40,8 +30,6 @@ PassengerId   Survival   Pclass   Name   Sex   Age   SibSp          Parch       
                          3 = 3rd
 """
 
-
-# In[46]:
 
 
 # filter strange data & fix data
@@ -87,10 +75,6 @@ print(train["Cabin"].value_counts())
 # Missing : 0
 # Perfect
 
-
-# In[56]:
-
-
 # split train data
 
 split_train = train.sample(frac = 0.7, axis = 0)
@@ -103,50 +87,3 @@ print("split_train shape : ", end = "")
 print(split_train.shape)
 print("split_test shape : ", end = "")
 print(split_test.shape)
-
-
-# In[ ]:
-
-
-# fill null data
-
-# 1. fill mean value
-Pclass_mean
-Age_mean
-SibSp_mean
-Parch_mean
-Ticket_mean
-Fare_mean
-Cabin_mean
-Embarked_mean
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-"""
-plt.scatter(train["SibSp"], train["Pclass"], edgecolors = "blue", s = 20, alpha = 0.5)
-plt.xlabel("")
-plt.ylabel("Pclass")
-plt.title("")
-plt.show()
-"""
-
