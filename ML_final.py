@@ -81,7 +81,7 @@ for i in range(len(train)):
             train['Pclass'][i] = 1
         
         
-
+"""
 # %% predict multivariate
 # ============================================================================
 # split train for train and test
@@ -95,4 +95,4 @@ train_train_dead = train_train[train_train["Survived"] == 0]
 def calculate_probability(x, mean, stdev):
 	exponent = exp(-((x-mean)**2 / (2 * stdev**2 )))
 	return (1 / (sqrt(2 * pi) * stdev)) * exponent
-
+"""
