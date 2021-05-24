@@ -81,7 +81,6 @@ for i in range(len(train)):
         if "E" in str(train["Cabin"][i]):
             train["Pclass"][i] = 1
 
-"""Fill Pclass Method 3"""
 # Refer to Fare & Fill Pclass
 max_fare_pclass_2and3 = train[train["Pclass"] > 1].max(skipna=True)["Fare"]
 for i in range(len(train)):
