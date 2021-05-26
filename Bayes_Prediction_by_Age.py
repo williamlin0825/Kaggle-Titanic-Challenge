@@ -70,12 +70,11 @@ target_guess = []
 for i in range(len(X_test)):
     target_guess.append(high_or_low_1f(X_test.iloc[i].at["Age"]))
 target_guess = pd.DataFrame(target_guess, columns = ["target guess 1f"])
-X_test = pd.concat([X_test, target_guess], axis = 1)
-y_test = pd.concat([y_test, target_guess], axis = 1)
+y_test = pd.DataFrame(y_test, columns = ["Survived"])
 
 accurate_count = 0
 for j in range(y_test.shape[0]):
-    if y_test.iloc[j].at["target guess 1f"] == y_test.iloc[j].at["Survived"]:
+    if target_guess.iloc[j].at["target guess 1f"] == y_test.iloc[j].at["Survived"]:
         accurate_count = accurate_count + 1
 
 accuracy_1f = accurate_count / y_test.shape[0]
