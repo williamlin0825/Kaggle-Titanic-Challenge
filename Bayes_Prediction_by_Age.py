@@ -4,10 +4,11 @@ Created on Wed May 26 22:43:45 2021
 
 @author: KuanHungWu
 """
-
+"""
 from IPython import get_ipython
 get_ipython().magic('clear')
 get_ipython().magic('reset -f')
+"""
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ from sklearn.model_selection import train_test_split
 data_original = pd.read_csv("train.csv")
 data_filtered_Nan = data_original.dropna(axis = 0, how = "all", subset = ["Age"])
 data_filtered_Nan["Relative Age"] = data_filtered_Nan["Age"] - data_filtered_Nan["Age"].mean() #年齡 - 有年齡值的人的平均年齡
+data_filtered_Nan["Relative Age Squared"] = data_filtered_Nan["Relative Age"] ** 2 #(年齡 - 有年齡值的人的平均年齡) ** 2
 
 X = data_filtered_Nan.drop(["Survived"], axis = 1)
 y = data_filtered_Nan["Survived"]
@@ -25,22 +27,15 @@ y = data_filtered_Nan["Survived"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
 data_train = pd.concat([X_train, y_train], axis = 1)
 
-#%% Plot
-plt.scatter(data_filtered_Nan["Relative Age"], data_filtered_Nan["Survived"], edgecolors = "blue", s = 20, alpha = 0.5)
-plt.xlabel("Relative Age")
-plt.ylabel("Survived")
-plt.title("Relative Age vs. Survived")
-plt.show()
-
 #%% Prediction
 data_train_survived = data_train[data_train["Survived"] == 1]
 data_train_dead = data_train[data_train["Survived"] == 0]
 
-Age_mean_target_survived = data_train_survived["Age"].mean()
-Age_std_target_survived = data_train_survived["Age"].std()
+Age_mean_target_survived = data_train_survived["Relative Age Squared"].mean()
+Age_std_target_survived = data_train_survived["Relative Age Squared"].std()
 row_count_target_survived = data_train_survived.shape[0]
-Age_mean_target_dead = data_train_dead["Age"].mean()
-Age_std_target_dead = data_train_dead["Age"].std()
+Age_mean_target_dead = data_train_dead["Relative Age Squared"].mean()
+Age_std_target_dead = data_train_dead["Relative Age Squared"].std()
 row_count_target_dead = data_train_dead.shape[0]
 
 def calculate_probability(x, mean, stdev):
@@ -68,7 +63,7 @@ def high_or_low_1f(Age):
 
 target_guess = []
 for i in range(len(X_test)):
-    target_guess.append(high_or_low_1f(X_test.iloc[i].at["Age"]))
+    target_guess.append(high_or_low_1f(X_test.iloc[i].at["Relative Age Squared"]))
 target_guess = pd.DataFrame(target_guess, columns = ["target guess 1f"])
 y_test = pd.DataFrame(y_test, columns = ["Survived"])
 
