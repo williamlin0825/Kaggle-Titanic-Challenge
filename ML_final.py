@@ -130,9 +130,11 @@ print (train_of_train,'\n',test_of_train)
 
 y_train_of_train=train_of_train.loc[:,['Survived']]
 y_test_of_train=test_of_train.loc[:,['Survived']]
+y_train=train.loc[:,['Survived']]
 
 test_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
 train_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
+train.drop(['PassengerId','Survived'], axis=1,inplace=True)
 passenger=test.loc[:,['PassengerId']]
 
 test.drop(['PassengerId'], axis=1,inplace=True)
@@ -140,20 +142,23 @@ test.drop(['PassengerId'], axis=1,inplace=True)
 #change to array to compute
 y_train_of_train=y_train_of_train.to_numpy()
 y_test_of_train=y_test_of_train.to_numpy()
+y_train=y_train.to_numpy()
+
 train_of_train=train_of_train.to_numpy()
 test_of_train=test_of_train.to_numpy()
+
 test=test.to_numpy()
+train=train.to_numpy()
+
 passenger=passenger.to_numpy()
 
 #reshape y
 y_train_of_train=np.squeeze(y_train_of_train)
 y_test_of_train=np.squeeze(y_test_of_train)
-
+y_train=np.squeeze(y_train)
 
 print(train)
 print(test)
-print(train_of_train)
-print(test_of_train)
 
 # ============================================================================
 # %% Logistic Regression
@@ -186,15 +191,15 @@ init_parameters = {}
 init_parameters["weight"] = np.zeros(train_of_train.shape[1])
 init_parameters["bias"] = 0
 
-def train(x, y, learning_rate,iterations):
+def train_process(x, y, learning_rate,iterations):
     parameters_out = optimize(x, y, learning_rate, iterations ,init_parameters)
     return parameters_out
 
 # ============================================================================
 # %% Training and Testing
 # ============================================================================
-parameters_out = train(train_of_train, y_train_of_train, learning_rate = 0.1, iterations = 10000)
-output_values=np.dot(test_of_train,parameters_out["weight"])+parameters_out["bias"]
+parameters_out = train_process(train, y_train, learning_rate = 0.1, iterations = 100000)
+output_values=np.dot(train,parameters_out["weight"])+parameters_out["bias"]
 prediction=np.zeros(len(output_values))
 
 for i in range(len(output_values)):
@@ -204,7 +209,7 @@ for i in range(len(output_values)):
         prediction[i]=0
 count=0
 for i in range(len(output_values)):
-    if y_test_of_train[i]==prediction[i]:
+    if y_train[i]==prediction[i]:
         count+=1
 accuracy=count/len(output_values)
 print("The Accuracy is", accuracy*100,"%")
@@ -227,5 +232,6 @@ for i in range(len(final_output)):
 result=np.reshape(result,(len(result),1))
 final_result=np.concatenate((passenger, result),axis=1)
 final_result=final_result.astype(int)
-
-np.savetxt('result.csv', final_result, "%d,%d", header="PassengerId,Survived")
+dataframe=pd.DataFrame(final_result, columns=['PassengerId','Survived']) 
+print (dataframe)
+dataframe.to_csv('result.csv',index=False)
