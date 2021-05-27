@@ -7,55 +7,22 @@ import numpy as np
 import pandas as pd
 from math import sqrt, exp, pi
 from matplotlib import pyplot as plt
+import random
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
 # %% preprocessing
 # ============================================================================
-""" Fill Pclass Method 1
-# replace Nan in Cabin row with 0
-train["Cabin"].fillna(0, inplace=True)
-test["Cabin"].fillna(0, inplace=True)
-train["Pclass"].fillna(0, inplace=True)
-test["Pclass"].fillna(0, inplace=True)
-# change the data form of Cabin to 0 and 1
-train.loc[train["Cabin"] == 0, "Cabin"] = 0
-train.loc[train["Cabin"] != 0, "Cabin"] = 1
-test.loc[test["Cabin"] == 0, "Cabin"] = 0
-test.loc[test["Cabin"] != 0, "Cabin"] = 1
-# find the mean Fare of different Pclass
-fare_mean = train.groupby("Pclass")["Fare"].mean()
-fare_mean = pd.DataFrame({"Pclass": fare_mean.index, "Fare": fare_mean.values})
-class1_fare_mean = fare_mean["Fare"][1]
-class2_fare_mean = fare_mean["Fare"][2]
-class3_fare_mean = fare_mean["Fare"][3]
-# fill the Nan of Pclass based on Fare difference with mean of fare of different class
-for i in range(len(train)):
-    if train["Pclass"][i] == 0:
-        fare_difference1 = abs(train["Fare"][i]-class1_fare_mean)
-        fare_difference2 = abs(train["Fare"][i]-class2_fare_mean)
-        fare_difference3 = abs(train["Fare"][i]-class3_fare_mean)
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference1:
-            train["Pclass"][i] = 1
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference2:
-            train["Pclass"][i] = 2
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference3:
-            train["Pclass"][i] = 3
-for i in range(len(test)):
-    if test["Pclass"][i] == 0:
-        fare_difference1 = abs(test["Fare"][i]-class1_fare_mean)
-        fare_difference2 = abs(test["Fare"][i]-class2_fare_mean)
-        fare_difference3 = abs(test["Fare"][i]-class3_fare_mean)
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference1:
-            test["Pclass"][i] = 1
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference2:
-            test["Pclass"][i] = 2
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference3:
-            test["Pclass"][i] = 3
-"""
+#fill cabin
+def set_Cabin_type(df):
+    df.loc[ (df.Cabin.notnull()), 'Cabin' ] = "Yes"
+    df.loc[ (df.Cabin.isnull()), 'Cabin' ] = "No"
+    return df
 
-"""Fill Pclass Method 2"""
+train=set_Cabin_type(train)
+test=set_Cabin_type(test)
+
 # replace Nan in Cabin row with 0
 train["Pclass"].fillna(0, inplace=True)
 test["Pclass"].fillna(0, inplace=True)
@@ -86,89 +53,179 @@ for i in range(len(train)):
     if train["Pclass"][i] == 0:
         if train["Embarked"][i] == "Q":
             train["Pclass"][i] = 3
+            
+# Refer to Cabin & Fill Pclass
+for i in range(len(test)):
+    if test["Pclass"][i] == 0:
+        if "T" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+        if "A" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+        if "B" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+        if "C" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+        if "D" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+        if "E" in str(test["Cabin"][i]):
+            test["Pclass"][i] = 1
+
+# Refer to Fare & Fill Pclass
+for i in range(len(test)):
+    if test["Pclass"][i] == 0:
+        if test["Pclass"][i] > max_fare_pclass_2and3:
+            # Can We Use Chebyshev"s Theorem?
+            test["Pclass"][i] = 1
+    if test["Pclass"][i] == 0:
+        if test["Embarked"][i] == "Q":
+            test["Pclass"][i] = 3
+
+#replace the 0 in Pcalss to 3
+train['Pclass'] = train['Pclass'].replace(0,3)
+test['Pclass'] = test['Pclass'].replace(0,3)
+
+#fill Nan Age
+mean_age=train['Age'].mean()
+train['Age'].fillna(value=train['Age'].mean(), inplace=True)
+test['Age'].fillna(value=test['Age'].mean(), inplace=True)
+
+#fill Nan Fare
+mean_Fare=train['Fare'].mean()
+train['Fare'].fillna(value=train['Fare'].mean(), inplace=True)
+
+#fill Nan Embarked
+test['Embarked'].fillna(train['Embarked'].mode().iloc[0], inplace=True)
+
+#Numeralization
+d_Sex=pd.get_dummies(train['Sex'],prefix='Sex')
+d_Pclass=pd.get_dummies(train['Pclass'],prefix='Pclass')
+d_Embarked=pd.get_dummies(train['Embarked'],prefix='Embarked')
+d_Cabin=pd.get_dummies(train['Cabin'],prefix='Cabin')
+train=pd.concat([train,d_Sex,d_Pclass,d_Embarked,d_Cabin],axis=1)
+train.drop(['Name','Sex','Pclass','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+
+d_Sex=pd.get_dummies(test['Sex'],prefix='Sex')
+d_Pclass=pd.get_dummies(test['Pclass'],prefix='Pclass')
+d_Embarked=pd.get_dummies(test['Embarked'],prefix='Embarked')
+d_Cabin=pd.get_dummies(test['Cabin'],prefix='Cabin')
+test=pd.concat([test,d_Sex,d_Pclass,d_Embarked,d_Cabin],axis=1)
+test.drop(['Name','Sex','Pclass','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+
+
+
+#Normalize Age and Fare
+test[['Age','Fare']] -= train[['Age','Fare']].min()
+test[['Age','Fare']] /= train[['Age','Fare']].max()
+
+train[['Age','Fare']] -= train[['Age','Fare']].min()
+train[['Age','Fare']] /= train[['Age','Fare']].max()
+
+
+
+
+#Split Training set value to train_of_train and train_of_test
+train_of_train=train.sample(frac=0.7)
+test_of_train=train.drop(train_of_train.index)
+print (train_of_train,'\n',test_of_train)
+
+y_train_of_train=train_of_train.loc[:,['Survived']]
+y_test_of_train=test_of_train.loc[:,['Survived']]
+
+test_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
+train_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
+passenger=test.loc[:,['PassengerId']]
+
+test.drop(['PassengerId'], axis=1,inplace=True)
+
+#change to array to compute
+y_train_of_train=y_train_of_train.to_numpy()
+y_test_of_train=y_test_of_train.to_numpy()
+train_of_train=train_of_train.to_numpy()
+test_of_train=test_of_train.to_numpy()
+test=test.to_numpy()
+passenger=passenger.to_numpy()
+
+#reshape y
+y_train_of_train=np.squeeze(y_train_of_train)
+y_test_of_train=np.squeeze(y_test_of_train)
+
+
 print(train)
+print(test)
+print(train_of_train)
+print(test_of_train)
 
-"""
-# %% predict multivariate
 # ============================================================================
-# split train for train and test
-train_train = train.sample(frac = 0.7, axis = 0)
-train_test = train.append(train_train)
-train_test = train_test.drop_duplicates(list(train), keep = False)
-train_train_survived = train_train[train_train["Survived"] == 1]
-train_train_dead = train_train[train_train["Survived"] == 0]
-def calculate_probability(x, mean, stdev):
-	exponent = exp(-((x-mean)**2 / (2 * stdev**2 )))
-	return (1 / (sqrt(2 * pi) * stdev)) * exponent
-def mean(numbers):
-	return sum(numbers)/float(len(numbers))
-def stdev(numbers):
-	avg = mean(numbers)
-	variance = sum([(x-avg)**2 for x in numbers]) / float(len(numbers)-1)
-	return sqrt(variance)
-def calculate_probability_multivariate(d, x, mean, cov):
-	temp=(x-mean).transpose()
-	temp=temp.dot(np.linalg.inv(cov))
-	exponent = exp(-(temp.dot(x-mean))/2)
-	return (1 / (sqrt(2 * pi)**d * np.linalg.det(cov))) * exponent
-def calculate_probability_log(x, mean, stdev):
-	exponent = exp(-((log(x)-mean)**2 / (2 * stdev**2 )))
-	return (1 / (sqrt(2 * pi) *x * stdev)) * exponent
-"""
+# %% Logistic Regression
+# ============================================================================
+def sigmoid(input):    
+    output = 1 / (1 + np.exp(-input))
+    return output
 
-# =============================================================================
-# Trying PCA
-# =============================================================================
-from sklearn.decomposition import PCA
 
-train_no_null=train.drop(['PassengerId','Age','Name','Ticket'],axis=1)    #create a temporary testing set without Nan
-train_no_null["Cabin"].fillna(0, inplace=True)
-train_no_null.loc[train_no_null["Cabin"] == 0, "Cabin"] = 0
-train_no_null.loc[train_no_null["Cabin"] != 0, "Cabin"] = 1
-train_no_null["Fare"].fillna(0, inplace=True)
-train_no_null['Embarked'] = pd.factorize(train_no_null['Embarked'])[0]
-train_no_null['Sex'] = pd.factorize(train_no_null['Sex'])[0]
+def optimize(x, y,learning_rate,iterations,parameters): 
+    size = x.shape[0]
+    weight = parameters["weight"] 
+    bias = parameters["bias"]
+    for i in range(iterations): 
+        sigma = sigmoid(np.dot(x, weight) + bias)
+        loss = (-1/size )*np.sum(y * np.log(sigma) + (1 - y) * np.log(1-sigma))
+        dW = 1/size * np.dot(x.T, (sigma - y))
+        db = 1/size * np.sum(sigma - y)
+        weight -= learning_rate * dW
+        bias -= learning_rate * db 
+        if (i+1)%100==0:
+            print('=== Iteration: %d ===' %(i+1))
+            print('Training loss: %.4f' %loss)
+    
+    parameters["weight"] = weight
+    parameters["bias"] = bias
+    return parameters
 
-alive=train_no_null.loc[:,'Survived']
-train_no_null=train_no_null.drop(['Survived'],axis=1)               #get Survived as Y 
-Y=alive.to_numpy()
-print(train_no_null)
+init_parameters = {} 
+init_parameters["weight"] = np.zeros(train_of_train.shape[1])
+init_parameters["bias"] = 0
 
-pca_training = PCA().fit(train_no_null)
-plt.figure()
-accumulate_pca=np.cumsum(pca_training.explained_variance_ratio_)
-plt.plot(accumulate_pca)
-plt.xlabel('number of components')
-plt.ylabel('cumulative explained variance')
-plt.show()
+def train(x, y, learning_rate,iterations):
+    parameters_out = optimize(x, y, learning_rate, iterations ,init_parameters)
+    return parameters_out
 
-pca_training3 = PCA(n_components = 3)       #PCA using 3 components
-pca_training3_feature = pca_training3.fit_transform(train_no_null)
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.set_title('PCA(component = 3)')
-ax.scatter(pca_training3_feature[:,0],pca_training3_feature[:,1], 
-           pca_training3_feature[:,2], c=Y)
-plt.show()
+# ============================================================================
+# %% Training and Testing
+# ============================================================================
+parameters_out = train(train_of_train, y_train_of_train, learning_rate = 0.1, iterations = 10000)
+output_values=np.dot(test_of_train,parameters_out["weight"])+parameters_out["bias"]
+prediction=np.zeros(len(output_values))
 
-pca_training2 = PCA(n_components = 2)       #PCA using 2 components
-pca_training2_feature = pca_training2.fit_transform(train_no_null)
-plt.figure()
-plt.title('PCA(component = 2)')
-plt.scatter(pca_training2_feature[:,0],pca_training2_feature[:,1],c=Y)
-plt.show()
+for i in range(len(output_values)):
+    if sigmoid(output_values[i])>=1/2:
+        prediction[i]=1
+    else:
+        prediction[i]=0
+count=0
+for i in range(len(output_values)):
+    if y_test_of_train[i]==prediction[i]:
+        count+=1
+accuracy=count/len(output_values)
+print("The Accuracy is", accuracy*100,"%")
 
-# =============================================================================
-# Trying LDA
-# =============================================================================
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+# ============================================================================
+# %% Get the final result for testing set
+# ============================================================================
+final_output=np.dot(test,parameters_out["weight"])+parameters_out["bias"]
+result=np.zeros(len(final_output))
 
-lda = LinearDiscriminantAnalysis()
-lda_train = lda.fit(train_no_null, Y)
+for i in range(len(final_output)):
+    if sigmoid(final_output[i])>=1/2:
+        result[i]=1
+    else:
+        result[i]=0
+        
+# ============================================================================
+# %% Save the result
+# ============================================================================
+result=np.reshape(result,(len(result),1))
+final_result=np.concatenate((passenger, result),axis=1)
+final_result=final_result.astype(int)
 
-lda1 = LinearDiscriminantAnalysis(n_components=1)
-lda1_train = lda1.fit_transform(train_no_null, Y)
-plt.figure()
-plt.title('LDA(component = 1)')
-plt.scatter(lda1_train[:,0],np.zeros([1,len(lda1_train)]),c=Y)
-plt.show()
+np.savetxt('result.csv', final_result, "%d,%d", header="PassengerId,Survived")
