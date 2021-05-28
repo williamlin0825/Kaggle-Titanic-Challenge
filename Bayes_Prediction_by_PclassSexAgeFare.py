@@ -24,7 +24,7 @@ from matplotlib import pyplot as plt
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
-
+#我有放preprocessing 有新的再換中間 從這裡!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # %% Preprocessing
 # ============================================================================
 # Change Column "Name" to "Full Name"
@@ -162,7 +162,8 @@ for i in range(len(train)):
             train["Age"][i] = Age_Sir_mean
         else:
             train["Age"][i] = Age_total_mean
-            
+
+#我有放preprocessing 有新的再換中間 到這裡!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
             
 #%%
 accuracy_total=0
