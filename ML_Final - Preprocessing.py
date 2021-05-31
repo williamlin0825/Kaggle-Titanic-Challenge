@@ -186,31 +186,31 @@ for i in range(len(train)):
     if train["Age"][i] == -1:
         if train["Title"][i] == "Mr":
             train["Age"][i] = Age_Mr_mean
-        if train["Title"][i] == "Miss":
+        elif train["Title"][i] == "Miss":
             train["Age"][i] = Age_Miss_mean
-        if train["Title"][i] == "Mrs":
+        elif train["Title"][i] == "Mrs":
             train["Age"][i] = Age_Mrs_mean
-        if train["Title"][i] == "Master":
+        elif train["Title"][i] == "Master":
             train["Age"][i] = Age_Master_mean
-        if train["Title"][i] == "Dr":
+        elif train["Title"][i] == "Dr":
             train["Age"][i] = Age_Dr_mean
-        if train["Title"][i] == "Rev":
+        elif train["Title"][i] == "Rev":
             train["Age"][i] = Age_Rev_mean
-        if train["Title"][i] == "Col":
+        elif train["Title"][i] == "Col":
             train["Age"][i] = Age_Col_mean
-        if train["Title"][i] == "Major":
+        elif train["Title"][i] == "Major":
             train["Age"][i] = Age_Major_mean
-        if train["Title"][i] == "Jonkheer":
+        elif train["Title"][i] == "Jonkheer":
             train["Age"][i] = Age_Jonkheer_mean
-        if train["Title"][i] == "Mlle":
+        elif train["Title"][i] == "Mlle":
             train["Age"][i] = Age_Mlle_mean
-        if train["Title"][i] == "Mme":
+        elif train["Title"][i] == "Mme":
             train["Age"][i] = Age_Mme_mean
-        if train["Title"][i] == "Ms":
+        elif train["Title"][i] == "Ms":
             train["Age"][i] = Age_Miss_mean
-        if train["Title"][i] == "Capt":
+        elif train["Title"][i] == "Capt":
             train["Age"][i] = Age_Capt_mean
-        if train["Title"][i] == "Sir":
+        elif train["Title"][i] == "Sir":
             train["Age"][i] = Age_Sir_mean
         else:
             train["Age"][i] = Age_total_mean
