@@ -223,7 +223,50 @@ for i in range(len(train)):
         test["Embarked"][i] = "S"
 """
 
+# %%% Age Group
+# Age Distribution Plot
+"""
+plt.bar(train["Age"].value_counts().index, train["Age"].value_counts())
+plt.title("Age Distribution")
+plt.xlabel("Age")
+plt.ylabel("Number of people")
+plt.show()
+"""
+
+train["Age Group"] = 0
+for i in range(len(train)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
+    if train["Age"].iloc[i] < 12:
+        train["Age Group"].iloc[i] = 1
+    elif train["Age"].iloc[i] >= 12 and train["Age"].iloc[i] < 60:
+        train["Age Group"].iloc[i] = 2
+    elif train["Age"].iloc[i] >= 60:
+        train["Age Group"].iloc[i] = 3
+
+# %%% Relationship
+# Number of People Who Share One Ticket Number Distribution
+x = train["Ticket"].value_counts().value_counts()
+plt.bar(train["Ticket"].value_counts().value_counts().index, train["Ticket"].value_counts().value_counts())
+plt.title("Number of People Who Share One Ticket Number Distribution")
+plt.xlabel("Number of People Who Share One Ticket Number")
+plt.ylabel("Number")
+plt.show()
+
+# 先用船票判斷是否一起再用年齡整理關係
+
+# Family = 2
+# Husband(211) and Wife(212)
+# Meaning of the number (eg. 211) : "2" people, case "1", no."1"
+
+# Dad and Child
+
+# Mom and Child
+
+
+# Family = 3
+# Dad and Mom and Child
+
 # %% To Do List
 # ============================================================================
+# Pclass也可以找相同船票的填
 # Test也要填值
 # 把所有填值都合併在一個for迴圈內
