@@ -24,6 +24,7 @@ from matplotlib import pyplot as plt
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
+
 # %% Preprocessing
 # ============================================================================
 # Change Column "Name" to "Full Name"
