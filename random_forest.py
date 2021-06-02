@@ -20,8 +20,8 @@ from math import sqrt, exp, pi
 from matplotlib import pyplot as plt
 import random 
 
-train = pd.read_csv("train.csv")
-test = pd.read_csv("test.csv")
+train = pd.read_csv("train2.csv")
+test = pd.read_csv("test2.csv")
 # %% Preprocessing
 # ============================================================================
 # Change Column "Name" to "Full Name"
@@ -387,23 +387,35 @@ def set_Cabin_type(df):
 train=set_Cabin_type(train)
 test=set_Cabin_type(test)
 
-train_temp=train
-print(train_temp)
 
+
+#Factorize if 因子化 is disabled
+"""
+train['Sex'] = pd.factorize(train['Sex'])[0] 
+test['Sex'] = pd.factorize(test['Sex'])[0] 
+train['Embarked'] = pd.factorize(train['Embarked'])[0] 
+test['Embarked'] = pd.factorize(test['Embarked'])[0]
+print(train)
+"""
 #因子化
+
 d_Sex=pd.get_dummies(train['Sex'],prefix='Sex')
 d_Pclass=pd.get_dummies(train['Pclass'],prefix='Pclass')
 d_Embarked=pd.get_dummies(train['Embarked'],prefix='Embarked')
 d_Cabin=pd.get_dummies(train['Cabin'],prefix='Cabin')
 train=pd.concat([train,d_Sex,d_Pclass,d_Embarked,d_Cabin],axis=1)
-train.drop(['Full Name','Last Name','Title','First Name','Sex','Pclass','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+train_temp=train
+train.drop(['Full Name','Last Name','Title','First Name','Sex','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+
 
 d_Sex1=pd.get_dummies(test['Sex'],prefix='Sex')
 d_Pclass1=pd.get_dummies(test['Pclass'],prefix='Pclass')
 d_Embarked1=pd.get_dummies(test['Embarked'],prefix='Embarked')
 d_Cabin1=pd.get_dummies(test['Cabin'],prefix='Cabin')
 test=pd.concat([test,d_Sex1,d_Pclass1,d_Embarked1,d_Cabin1],axis=1)
-test.drop(['Full Name','Last Name','Title','First Name','Sex','Pclass','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+test_temp=test
+test.drop(['Full Name','Last Name','Title','First Name','Sex','Embarked','Cabin','Ticket'],axis=1,inplace=True)
+
 
 
 #standardize Age and Fare
@@ -457,6 +469,29 @@ passenger=passenger.to_numpy()
 y_train_of_train=np.squeeze(y_train_of_train)
 y_test_of_train=np.squeeze(y_test_of_train)
 y_train=np.squeeze(y_train)
+
+# ============================================================================
+# %% Additional function
+# ============================================================================
+
+def accuracy_calculate(preds,y):
+    count=0
+    for i in range(len(preds)):
+        if y_train[i]==preds[i]:
+            count+=1
+    accuracy=count/len(preds)
+    print("The accuracy of training set is ",accuracy*100," %")
+    return accuracy
+
+def save_data(passenger,result):
+    result=np.reshape(result,(len(result),1))
+    final_result=np.concatenate((passenger, result),axis=1)
+    final_result=final_result.astype(int)
+    dataframe=pd.DataFrame(final_result, columns=['PassengerId','Survived']) 
+    print (dataframe)
+    dataframe.to_csv('result.csv',index=False)
+    
+
 """
 # ============================================================================
 # %% Logistic Regression
@@ -509,12 +544,7 @@ for i in range(len(output_values)):
         prediction[i]=1
     else:
         prediction[i]=0
-count=0
-for i in range(len(output_values)):
-    if y_train[i]==prediction[i]:
-        count+=1
-accuracy=count/len(output_values)
-print("The Accuracy is", accuracy*100,"%")
+accuracy_calculate(prediction,y_train)
 
 # ============================================================================
 # %% Get the final result for testing set
@@ -531,12 +561,10 @@ for i in range(len(final_output)):
 # ============================================================================
 # %% Save the result
 # ============================================================================
-result=np.reshape(result,(len(result),1))
-final_result=np.concatenate((passenger, result),axis=1)
-final_result=final_result.astype(int)
-dataframe=pd.DataFrame(final_result, columns=['PassengerId','Survived']) 
-print (dataframe)
-dataframe.to_csv('result.csv',index=False)
+save_data(passenger,result)
+
+
+"""
 """
 temp=[]
 from collections import Counter
@@ -686,7 +714,6 @@ class RandomForest:
         tree_preds = np.array([tree.predict(X) for tree in self.trees])
         tree_preds = np.swapaxes(tree_preds, 0, 1)
         temp=tree_preds
-        print(tree_preds)
         y_pred = [most_common_label(tree_pred) for tree_pred in tree_preds]
         return np.array(y_pred)
     
@@ -695,11 +722,25 @@ clf = RandomForest(n_trees=3, max_depth=10)
 clf.fit(train, y_train)
 preds = clf.predict(train)
 
+accuracy=accuracy_calculate(preds,y_train)
+# ============================================================================
+# %% Get the final result for testing set
+# ============================================================================
+result=clf.predict(test)
 
-count=0
-for i in range(len(preds)):
-    if y_train[i]==preds[i]:
-        count+=1
-accuracy=count/len(preds)
-print("The Accuracy is", accuracy*100,"%")
+# ============================================================================
+# %% Save the result
+# ============================================================================
+save_data(passenger,result)
+"""
+from sklearn import ensemble, preprocessing, metrics
 
+forest = ensemble.RandomForestClassifier(n_estimators = 100)
+forest_fit = forest.fit(train, y_train)
+preds=forest.predict(train)
+accuracy_calculate(preds,y_train)
+
+# 預測
+result= forest.predict(test)
+
+save_data(passenger,result)
