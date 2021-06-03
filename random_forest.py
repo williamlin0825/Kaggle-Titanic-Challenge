@@ -20,8 +20,8 @@ from math import sqrt, exp, pi
 from matplotlib import pyplot as plt
 import random 
 
-train = pd.read_csv("train2.csv")
-test = pd.read_csv("test2.csv")
+train = pd.read_csv("train.csv")
+test = pd.read_csv("test.csv")
 # %% Preprocessing
 # ============================================================================
 # Change Column "Name" to "Full Name"
@@ -492,7 +492,7 @@ def save_data(passenger,result):
     dataframe.to_csv('result.csv',index=False)
     
 
-"""
+
 # ============================================================================
 # %% Logistic Regression
 # ============================================================================
@@ -525,7 +525,7 @@ def optimize(x, y,learning_rate,iterations,parameters):
     return parameters
 
 init_parameters = {} 
-init_parameters["weight"] = np.zeros(train.shape[1])
+init_parameters["weight"] = np.random.randn(train.shape[1])
 init_parameters["bias"] = 0
 
 def train_process(x, y, learning_rate,iterations):
@@ -564,7 +564,7 @@ for i in range(len(final_output)):
 save_data(passenger,result)
 
 
-"""
+
 """
 temp=[]
 from collections import Counter
@@ -732,7 +732,7 @@ result=clf.predict(test)
 # %% Save the result
 # ============================================================================
 save_data(passenger,result)
-"""
+
 from sklearn import ensemble, preprocessing, metrics
 
 forest = ensemble.RandomForestClassifier(n_estimators = 100)
@@ -744,3 +744,5 @@ accuracy_calculate(preds,y_train)
 result= forest.predict(test)
 
 save_data(passenger,result)
+
+"""
