@@ -405,7 +405,7 @@ d_Embarked=pd.get_dummies(train['Embarked'],prefix='Embarked')
 d_Cabin=pd.get_dummies(train['Cabin'],prefix='Cabin')
 train=pd.concat([train,d_Sex,d_Pclass],axis=1)
 train_temp=train
-train.drop(['Full Name','Last Name','Title','First Name','Sex','Embarked','Cabin','Ticket','Family','SibSp','Pclass','Fare'],axis=1,inplace=True)
+train.drop(['Full Name','Last Name','Title','First Name','Embarked','Cabin','Ticket','Family','SibSp','Sex','Pclass','Fare'],axis=1,inplace=True)
 
 
 d_Sex1=pd.get_dummies(test['Sex'],prefix='Sex')
@@ -414,7 +414,7 @@ d_Embarked1=pd.get_dummies(test['Embarked'],prefix='Embarked')
 d_Cabin1=pd.get_dummies(test['Cabin'],prefix='Cabin')
 test=pd.concat([test,d_Sex1,d_Pclass1],axis=1)
 test_temp=test
-test.drop(['Full Name','Last Name','Title','First Name','Sex','Embarked','Cabin','Ticket','Family','SibSp','Pclass','Fare'],axis=1,inplace=True)
+test.drop(['Full Name','Last Name','Title','First Name','Embarked','Cabin','Ticket','Family','SibSp','Sex','Pclass',"Fare",],axis=1,inplace=True)
 
 
 
