@@ -10,20 +10,23 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Automatically Clear Var. & Console
+# Import library
 from IPython import get_ipython
 get_ipython().magic("clear")
 get_ipython().magic("reset -f")
-
 import numpy as np
 import pandas as pd
 from math import sqrt, exp, pi
 from matplotlib import pyplot as plt
 import random 
 
+# Import Dataset
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
+
 # %% Preprocessing
 # ============================================================================
+
 # Change Column "Name" to "Full Name"
 train = train.rename(columns = {"Name" : "Full Name"})
 test = test.rename(columns = {"Name" : "Full Name"})
@@ -33,6 +36,7 @@ train.insert(8, "Family", train["SibSp"] + train["Parch"] + 1)
 test.insert(7, "Family", test["SibSp"] + test["Parch"] + 1)
 
 # %%% Fare
+
 # 在還沒填補Pclass值之前先算各Pclass的Fare平均，避免因Pclass填補誤差造成Fare平均的誤差
 Fare_Pclass1_mean = train.dropna(axis = 0, how = "all", subset = ["Fare"]).dropna(axis = 0, how = "all", subset = ["Pclass"])[train["Pclass"] == 1]["Fare"].mean()
 Fare_Pclass2_mean = train.dropna(axis = 0, how = "all", subset = ["Fare"]).dropna(axis = 0, how = "all", subset = ["Pclass"])[train["Pclass"] == 2]["Fare"].mean()
@@ -75,74 +79,6 @@ for i in range(len(test)):
             test["Fare"][i] = Fare_Pclass3_mean
 
 # %%% Pclass
-# Fill Pclass Method 1
-"""
-# replace Nan in Cabin row with 0
-train["Cabin"].fillna(0, inplace=True)
-test["Cabin"].fillna(0, inplace=True)
-train["Pclass"].fillna(0, inplace=True)
-test["Pclass"].fillna(0, inplace=True)
-# change the data form of Cabin to 0 and 1
-train.loc[train["Cabin"] == 0, "Cabin"] = 0
-train.loc[train["Cabin"] != 0, "Cabin"] = 1
-test.loc[test["Cabin"] == 0, "Cabin"] = 0
-test.loc[test["Cabin"] != 0, "Cabin"] = 1
-# find the mean Fare of different Pclass
-fare_mean = train.groupby("Pclass")["Fare"].mean()
-fare_mean = pd.DataFrame({"Pclass": fare_mean.index, "Fare": fare_mean.values})
-class1_fare_mean = fare_mean["Fare"][1]
-class2_fare_mean = fare_mean["Fare"][2]
-class3_fare_mean = fare_mean["Fare"][3]
-# fill the Nan of Pclass based on Fare difference with mean of fare of different class
-for i in range(len(train)):
-    if train["Pclass"][i] == 0:
-        fare_difference1 = abs(train["Fare"][i]-class1_fare_mean)
-        fare_difference2 = abs(train["Fare"][i]-class2_fare_mean)
-        fare_difference3 = abs(train["Fare"][i]-class3_fare_mean)
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference1:
-            train["Pclass"][i] = 1
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference2:
-            train["Pclass"][i] = 2
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference3:
-            train["Pclass"][i] = 3
-for i in range(len(test)):
-    if test["Pclass"][i] == 0:
-        fare_difference1 = abs(test["Fare"][i]-class1_fare_mean)
-        fare_difference2 = abs(test["Fare"][i]-class2_fare_mean)
-        fare_difference3 = abs(test["Fare"][i]-class3_fare_mean)
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference1:
-            test["Pclass"][i] = 1
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference2:
-            test["Pclass"][i] = 2
-        if min(fare_difference1, fare_difference2, fare_difference3) == fare_difference3:
-            test["Pclass"][i] = 3
-"""
-
-# Fill Pclass Method 2
-"""
-# Age Distribution of Pclass
-plt.bar(train[train["Pclass"] == 1]["Age"].value_counts().index, train[train["Pclass"] == 1]["Age"].value_counts())
-plt.title("Age Distribution of Pclass 1")
-plt.xlabel("Age")
-plt.ylabel("Number of people")
-plt.xlim([0, 100])
-plt.ylim([0, 25])
-plt.show()
-plt.bar(train[train["Pclass"] == 2]["Age"].value_counts().index, train[train["Pclass"] == 2]["Age"].value_counts())
-plt.title("Age Distribution of Pclass 2")
-plt.xlabel("Age")
-plt.ylabel("Number of people")
-plt.xlim([0, 100])
-plt.ylim([0, 25])
-plt.show()
-plt.bar(train[train["Pclass"] == 3]["Age"].value_counts().index, train[train["Pclass"] == 3]["Age"].value_counts())
-plt.title("Age Distribution of Pclass 3")
-plt.xlabel("Age")
-plt.ylabel("Number of people")
-plt.xlim([0, 100])
-plt.ylim([0, 25])
-plt.show()
-"""
 
 # Max Fare of Pclass 2 & 3
 max_fare_pclass_2and3 = train[train["Pclass"] > 1].max(skipna = True)["Fare"]
@@ -220,19 +156,9 @@ test.insert(3, "Last Name", test["Full Name"].str.split(", ", expand = True).ilo
 test.insert(4, "Title", test["Full Name"].str.split(", ", expand = True).iloc[:, 1].str.split(".", expand = True).iloc[:, 0])
 test.insert(5, "First Name", test["Full Name"].str.split(", ", expand = True).iloc[:, 1].str.split(".", expand = True).iloc[:, 1].map(lambda x: str(x)[1:]))
 
-"""
-print(train["Title"].value_counts()) # number of people of each title
-"""
+
 
 # %%% Age
-"""
-# Age Distribution of "Mr" title
-plt.bar(train[train["Title"] == "Mr"]["Age"].value_counts().index, train[train["Title"] == "Mr"]["Age"].value_counts())
-plt.title("Age Distribution")
-plt.xlabel("Age")
-plt.ylabel("Number of people")
-plt.show()
-"""
 
 Age_total_mean = train.dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
 Age_Mr_mean = train[train["Title"] == "Mr"].dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
@@ -326,13 +252,6 @@ for i in range(len(test)):
 
 # %%% Age Group
 # Age Distribution Plot
-"""
-plt.bar(train["Age"].value_counts().index, train["Age"].value_counts())
-plt.title("Age Distribution")
-plt.xlabel("Age")
-plt.ylabel("Number of people")
-plt.show()
-"""
 
 train["Age Group"] = 0
 for i in range(len(train)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
@@ -354,6 +273,7 @@ for i in range(len(test)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
 
 # %%% Relationship
 # Number of People Who Share One Ticket Number Distribution
+
 plt.bar(train["Ticket"].value_counts().value_counts().index, train["Ticket"].value_counts().value_counts())
 plt.title("Number of People Who Share One Ticket Number Distribution")
 plt.xlabel("Number of People Who Share One Ticket Number")
@@ -378,7 +298,7 @@ plt.show()
 # ============================================================================
 # 把所有填值都合併在一個for迴圈內
 
-
+# 將cabin資料整理成有值與缺失值，有的填yes,沒有填no
 def set_Cabin_type(df):
     df.loc[ (df.Cabin.notnull()), 'Cabin' ] = "Yes"
     df.loc[ (df.Cabin.isnull()), 'Cabin' ] = "No"
@@ -387,17 +307,7 @@ def set_Cabin_type(df):
 train=set_Cabin_type(train)
 test=set_Cabin_type(test)
 
-
-
-#Factorize if 因子化 is disabled
-"""
-train['Sex'] = pd.factorize(train['Sex'])[0] 
-test['Sex'] = pd.factorize(test['Sex'])[0] 
-train['Embarked'] = pd.factorize(train['Embarked'])[0] 
-test['Embarked'] = pd.factorize(test['Embarked'])[0]
-print(train)
-"""
-#因子化
+#因子化,選取藥用的資料
 
 d_Sex=pd.get_dummies(train['Sex'],prefix='Sex')
 d_Pclass=pd.get_dummies(train['Pclass'],prefix='Pclass')
@@ -434,46 +344,32 @@ train['Fare'] = 2*(((train['Fare']-train['Fare'].mean())/train['Fare'].std())-tr
 
 
 
-#Split Training set value to train_of_train and train_of_test
-train_of_train=train.sample(frac=0.7)
-test_of_train=train.drop(train_of_train.index)
-#print (train_of_train,'\n',test_of_train)
 
-y_train_of_train=train_of_train.loc[:,['Survived']]
-y_test_of_train=test_of_train.loc[:,['Survived']]       #get the survived array
+
+#get the survived array
 y_train=train.loc[:,['Survived']]
 
 passenger=test.loc[:,['PassengerId']]
 
-
-test_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
-train_of_train.drop(['PassengerId','Survived'], axis=1,inplace=True)
-train.drop(['PassengerId','Survived'], axis=1,inplace=True)             #drop the unused data of training
+#drop the unused data of training and testing(ID與生存率不該出現在要拿來訓練的資料中)
+train.drop(['PassengerId','Survived'], axis=1,inplace=True)
 test.drop(['PassengerId'], axis=1,inplace=True)
 
 
-#change to array to compute
-y_train_of_train=y_train_of_train.to_numpy()
-y_test_of_train=y_test_of_train.to_numpy()
+#change to array to compute,要把dataframe轉成array的形式方便訓練模型
 y_train=y_train.to_numpy()
-
-train_of_train=train_of_train.to_numpy()
-test_of_train=test_of_train.to_numpy()
-
 test=test.to_numpy()
 train=train.to_numpy()
-
 passenger=passenger.to_numpy()
 
 #reshape y
-y_train_of_train=np.squeeze(y_train_of_train)
-y_test_of_train=np.squeeze(y_test_of_train)
 y_train=np.squeeze(y_train)
 
 # ============================================================================
 # %% Additional function
 # ============================================================================
 
+#最後拿來計算準確度的函數
 def accuracy_calculate(preds,y):
     count=0
     for i in range(len(preds)):
@@ -483,6 +379,7 @@ def accuracy_calculate(preds,y):
     print("The accuracy of training set is ",accuracy*100," %")
     return accuracy
 
+#最後拿來存取資料的函數
 def save_data(passenger,result):
     result=np.reshape(result,(len(result),1))
     final_result=np.concatenate((passenger, result),axis=1)
@@ -492,17 +389,20 @@ def save_data(passenger,result):
     dataframe.to_csv('result.csv',index=False)
     
 
-
 # ============================================================================
 # %% Logistic Regression
 # ============================================================================
+
+# igmoid function，最後用y去計算使用sigmoid後的值
 def sigmoid(input):    
     output = 1 / (1 + np.exp(-input))
     return output
 
+# 存取weight和bias的變化過程
 weight_history=[]
 bias_history=[]
 
+# 訓練過程的function
 def optimize(x, y,learning_rate,iterations,parameters): 
     size = x.shape[0]
     weight = parameters["weight"] 
@@ -524,10 +424,12 @@ def optimize(x, y,learning_rate,iterations,parameters):
     parameters["bias"] = bias
     return parameters
 
+# 用init_parameter同時存取weight與bias
 init_parameters = {} 
 init_parameters["weight"] = np.random.randn(train.shape[1])
 init_parameters["bias"] = 0
 
+# 把訓練與存取參數的過程整理成train_process
 def train_process(x, y, learning_rate,iterations):
     parameters_out = optimize(x, y, learning_rate, iterations ,init_parameters)
     return parameters_out
@@ -535,20 +437,30 @@ def train_process(x, y, learning_rate,iterations):
 # ============================================================================
 # %% Training and Testing
 # ============================================================================
+
+# 將整理好的training資料進行訓練
+
 parameters_out = train_process(train, y_train, learning_rate = 0.01, iterations = 200000)
 output_values=np.dot(train,parameters_out["weight"])+parameters_out["bias"]
 prediction=np.zeros(len(output_values))
 
+# 把計算出的y帶入sigmoid function，大於0.5填1(生存)，小於0.5填0(死亡)
 for i in range(len(output_values)):
     if sigmoid(output_values[i])>=1/2:
         prediction[i]=1
     else:
         prediction[i]=0
+        
+# 計算training set的準確率
+
 accuracy_calculate(prediction,y_train)
 
 # ============================================================================
 # %% Get the final result for testing set
 # ============================================================================
+
+# 將testing set丟入訓練好的模型中，得到想要的猜測結果
+
 final_output=np.dot(test,parameters_out["weight"])+parameters_out["bias"]
 result=np.zeros(len(final_output))
 
@@ -561,4 +473,6 @@ for i in range(len(final_output)):
 # ============================================================================
 # %% Save the result
 # ============================================================================
+
+#存取最後的資料
 save_data(passenger,result)
