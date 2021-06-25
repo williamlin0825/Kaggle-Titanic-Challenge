@@ -458,6 +458,7 @@ def cross_validation(x,y,num,lr):
     for i in range(num):
         train_set=np.empty((0, train.shape[1]))
         ytrain_set=[]
+        print("=== ",(i+1)," time cross validation """)
         for j in range(num):
             if i!=j:
                 train_set=np.append(train_set,train_set_split[i],axis=0)
