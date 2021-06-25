@@ -366,6 +366,19 @@ passenger=passenger.to_numpy()
 y_train=np.squeeze(y_train)
 
 # ============================================================================
+# %% split data set to cross validation
+# ============================================================================
+def train_split(seq, num):
+    avg = len(seq) / float(num)
+    out = []
+    last = 0.0
+    while last < len(seq):
+        out.append(seq[int(last):int(last + avg)])
+        last += avg
+
+    return out
+
+# ============================================================================
 # %% Additional function
 # ============================================================================
 
@@ -376,7 +389,6 @@ def accuracy_calculate(preds,y):
         if y_train[i]==preds[i]:
             count+=1
     accuracy=count/len(preds)
-    print("The accuracy of training set is ",accuracy*100," %")
     return accuracy
 
 #最後拿來存取資料的函數
@@ -435,12 +447,45 @@ def train_process(x, y, learning_rate,iterations):
     return parameters_out
 
 # ============================================================================
+# %% Cross validation 
+# ============================================================================
+
+def cross_validation(x,y,num,lr):
+    train_set_split=train_split(x,num)
+    ytrain_set_split=train_split(y,num)
+    validation_accuracy=[]
+    output_history=[]
+    for i in range(num):
+        train_set=np.empty((0, train.shape[1]))
+        ytrain_set=[]
+        for j in range(num):
+            if i!=j:
+                train_set=np.append(train_set,train_set_split[i],axis=0)
+                ytrain_set=np.append(ytrain_set,ytrain_set_split[i],axis=0)
+        parameters_out = train_process(train_set, ytrain_set, learning_rate = lr, iterations = 50000)
+        output_values=np.dot(train_set_split[i],parameters_out["weight"])+parameters_out["bias"]
+        prediction=np.zeros(len(output_values))
+        for k in range(len(output_values)):
+            if sigmoid(output_values[k])>=1/2:
+                prediction[k]=1
+            else:
+                prediction[k]=0
+
+        #accuracy=accuracy_calculate(prediction,ytrain_set_split[i])
+        #validation_accuracy=np.append(validation_accuracy,accuracy)
+        output_history=np.append(output_history,prediction)
+    average_accuracy=accuracy_calculate(output_history,y_train)
+    return average_accuracy
+
+average_accuracy=cross_validation(train,y_train,10,0.1)
+
+# ============================================================================
 # %% Training and Testing
 # ============================================================================
 
 # 將整理好的training資料進行訓練
 
-parameters_out = train_process(train, y_train, learning_rate = 0.01, iterations = 200000)
+parameters_out = train_process(train, y_train, learning_rate = 0.1, iterations = 50000)
 output_values=np.dot(train,parameters_out["weight"])+parameters_out["bias"]
 prediction=np.zeros(len(output_values))
 
@@ -452,8 +497,9 @@ for i in range(len(output_values)):
         prediction[i]=0
         
 # 計算training set的準確率
-
-accuracy_calculate(prediction,y_train)
+print("Cross validation average accuracy=",average_accuracy*100,"%")
+training_accuracy=accuracy_calculate(prediction,y_train)
+print("Training set accuracy=",training_accuracy*100," %")
 
 # ============================================================================
 # %% Get the final result for testing set
