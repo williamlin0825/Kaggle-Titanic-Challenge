@@ -31,20 +31,21 @@ test = pd.read_csv("test.csv")
 train = train.rename(columns = {"Name" : "Full Name"})
 test = test.rename(columns = {"Name" : "Full Name"})
 
-# Add "Family = SibSp + Parch Column"
+# Add "Family = SibSp + Parch + 1" Column
 train.insert(8, "Family", train["SibSp"] + train["Parch"] + 1)
 test.insert(7, "Family", test["SibSp"] + test["Parch"] + 1)
 
 # %%% Fare
 
-# 在還沒填補Pclass值之前先算各Pclass的Fare平均，避免因Pclass填補誤差造成Fare平均的誤差
+# 在還沒填補 Pclass 值之前先算各 Pclass 的 Fare 平均，避免因 Pclass 填補誤差造成 Fare 平均的誤差
 Fare_Pclass1_mean = train.dropna(axis = 0, how = "all", subset = ["Fare"]).dropna(axis = 0, how = "all", subset = ["Pclass"])[train["Pclass"] == 1]["Fare"].mean()
 Fare_Pclass2_mean = train.dropna(axis = 0, how = "all", subset = ["Fare"]).dropna(axis = 0, how = "all", subset = ["Pclass"])[train["Pclass"] == 2]["Fare"].mean()
 Fare_Pclass3_mean = train.dropna(axis = 0, how = "all", subset = ["Fare"]).dropna(axis = 0, how = "all", subset = ["Pclass"])[train["Pclass"] == 3]["Fare"].mean()
 
+# 補 train 的 Fare 缺值
 train["Fare"].fillna(-1, inplace = True)
 for i in range(len(train)):
-    if train["Fare"][i] == -1: # Refer to Ticket
+    if train["Fare"][i] == -1: # 取相同 Ticket 的 Fare 眾數填補
         train_drop_nan = train.drop(train[train["Fare"] == -1].index)
         if train_drop_nan[train_drop_nan["Ticket"] == train["Ticket"].iloc[i]].shape[0] != 0:
             # Find Mode
@@ -52,17 +53,18 @@ for i in range(len(train)):
             mode = np.argmax(mode_counts)
             # Fill Mode
             train["Fare"][i] = mode
-    if train["Fare"][i] == -1: # Fill Each Class Fare Mean
+    if train["Fare"][i] == -1: # 取其 Pclass 等級的 Fare 平均填補
         if train["Pclass"][i] == 1:
             train["Fare"][i] = Fare_Pclass1_mean
         if train["Pclass"][i] == 2:
             train["Fare"][i] = Fare_Pclass2_mean
         if train["Pclass"][i] == 3:
             train["Fare"][i] = Fare_Pclass3_mean
-            
+
+# 補 test 的 Fare 缺值
 test["Fare"].fillna(-1, inplace = True)
 for i in range(len(test)):
-    if test["Fare"][i] == -1: # Refer to Ticket
+    if test["Fare"][i] == -1: # 取相同 Ticket 的 Fare 眾數填補
         train_drop_nan = train.drop(train[train["Fare"] == -1].index)
         if train_drop_nan[train_drop_nan["Ticket"] == test["Ticket"].iloc[i]].shape[0] != 0:
             # Find Mode
@@ -70,7 +72,7 @@ for i in range(len(test)):
             mode = np.argmax(mode_counts)
             # Fill Mode
             test["Fare"][i] = mode
-    if test["Fare"][i] == -1:
+    if test["Fare"][i] == -1: # 取其 Pclass 等級的 Fare 平均填補
         if test["Pclass"][i] == 1:
             test["Fare"][i] = Fare_Pclass1_mean
         if test["Pclass"][i] == 2:
@@ -87,9 +89,9 @@ max_fare_pclass_2and3 = train[train["Pclass"] > 1].max(skipna = True)["Fare"]
 train["Pclass"].fillna(-1, inplace = True)
 test["Pclass"].fillna(-1, inplace = True)
 
-# Fill Pclass
+# Fill Train Pclass
 for i in range(len(train)):
-    if train["Pclass"][i] == -1: # Refer to Ticket
+    if train["Pclass"][i] == -1: # 取相同 Ticket 的 Pclass 眾數填補
         train_drop_nan = train.drop(train[train["Pclass"] == -1].index)
         if train_drop_nan[train_drop_nan["Ticket"] == train["Ticket"].iloc[i]].shape[0] != 0:
             # Find Mode
@@ -97,7 +99,7 @@ for i in range(len(train)):
             mode = np.argmax(mode_counts)
             # Fill Mode
             train["Pclass"][i] = mode
-    if train["Pclass"][i] == -1: # Refer to Cabin
+    if train["Pclass"][i] == -1: # Cabin 出現 T, A, B, C, D, E 的 Pclass 都填 1
         if "T" in str(train["Cabin"][i]):
             train["Pclass"][i] = 1
         elif "A" in str(train["Cabin"][i]):
@@ -110,15 +112,16 @@ for i in range(len(train)):
             train["Pclass"][i] = 1
         elif "E" in str(train["Cabin"][i]):
             train["Pclass"][i] = 1
-    if train["Pclass"][i] == -1: # Refer to Fare
+    if train["Pclass"][i] == -1: # Fare 超過 train 中 Pclass2 Pclass3 的 Fare 最大值的話 Pclass 填 1
         if train["Pclass"][i] > max_fare_pclass_2and3:
             train["Pclass"][i] = 1
-    if train["Pclass"][i] == -1: # Refer to Embarked
+    if train["Pclass"][i] == -1: # 從 Q 上船的話 Pclass 填 3
         if train["Embarked"][i] == "Q":
             train["Pclass"][i] = 3
-            
+
+# Fill Test Pclass
 for i in range(len(test)):
-    if test["Pclass"][i] == -1: # Refer to Ticket
+    if test["Pclass"][i] == -1: # 取相同 Ticket 的 Pclass 眾數填補
         train_drop_nan = train.drop(train[train["Pclass"] == -1].index)
         if train_drop_nan[train_drop_nan["Ticket"] == test["Ticket"].iloc[i]].shape[0] != 0:
             # Find Mode
@@ -126,7 +129,7 @@ for i in range(len(test)):
             mode = np.argmax(mode_counts)
             # Fill Mode
             test["Pclass"][i] = mode
-    if test["Pclass"][i] == -1: # Refer to Cabin
+    if test["Pclass"][i] == -1: # Cabin 出現 T, A, B, C, D, E 的 Pclass 都填 1
         if "T" in str(test["Cabin"][i]):
             test["Pclass"][i] = 1
         elif "A" in str(test["Cabin"][i]):
@@ -139,10 +142,10 @@ for i in range(len(test)):
             test["Pclass"][i] = 1
         elif "E" in str(test["Cabin"][i]):
             test["Pclass"][i] = 1
-    if test["Pclass"][i] == -1: # Refer to Fare
+    if test["Pclass"][i] == -1: # Fare 超過 train 中 Pclass2 Pclass3 的 Fare 最大值的話 Pclass 填 1
         if test["Pclass"][i] > max_fare_pclass_2and3:
             test["Pclass"][i] = 1
-    if test["Pclass"][i] == -1: # Refer to Embarked
+    if test["Pclass"][i] == -1: # 從 Q 上船的話 Pclass 填 3
         if test["Embarked"][i] == "Q":
             test["Pclass"][i] = 3
 
@@ -156,10 +159,9 @@ test.insert(3, "Last Name", test["Full Name"].str.split(", ", expand = True).ilo
 test.insert(4, "Title", test["Full Name"].str.split(", ", expand = True).iloc[:, 1].str.split(".", expand = True).iloc[:, 0])
 test.insert(5, "First Name", test["Full Name"].str.split(", ", expand = True).iloc[:, 1].str.split(".", expand = True).iloc[:, 1].map(lambda x: str(x)[1:]))
 
-
-
 # %%% Age
 
+# Find Age Mean for Each Title
 Age_total_mean = train.dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
 Age_Mr_mean = train[train["Title"] == "Mr"].dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
 Age_Miss_mean = train[train["Title"] == "Miss"].dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
@@ -175,7 +177,7 @@ Age_Mme_mean = train[train["Title"] == "Mme"].dropna(axis = 0, how = "all", subs
 Age_Capt_mean = train[train["Title"] == "Capt"].dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
 Age_Sir_mean = train[train["Title"] == "Sir"].dropna(axis = 0, how = "all", subset = ["Age"])["Age"].mean()
 
-# Fill Nan Data With Mean of Certain Catag.
+# Fill Nan Data With Mean of Certain Title in train data
 train["Age"].fillna(-1, inplace = True)
 for i in range(len(train)):
     if train["Age"][i] == -1:
@@ -210,6 +212,7 @@ for i in range(len(train)):
         else:
             train["Age"][i] = Age_total_mean
 
+# Fill Nan Data With Mean of Certain Title in test data
 test["Age"].fillna(-1, inplace = True)
 for i in range(len(test)):
     if test["Age"][i] == -1:
@@ -245,25 +248,28 @@ for i in range(len(test)):
             test["Age"][i] = Age_total_mean
 
 # %%% Embarked
+
+# Fill Nan Embarked with S
 test["Embarked"].fillna(-1, inplace = True)
 for i in range(len(test)):
     if test["Embarked"][i] == -1:
         test["Embarked"][i] = "S"
 
 # %%% Age Group
-# Age Distribution Plot
 
+# Train Add New Column "Age Group"
 train["Age Group"] = 0
-for i in range(len(train)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
+for i in range(len(train)): # 0~12 : Age Group = 1 ; 12~60 : Age Group = 2 ; 60~ : Age Group = 3
     if train["Age"].iloc[i] < 12:
         train["Age Group"].iloc[i] = 1
     elif train["Age"].iloc[i] >= 12 and train["Age"].iloc[i] < 60:
         train["Age Group"].iloc[i] = 2
     elif train["Age"].iloc[i] >= 60:
         train["Age Group"].iloc[i] = 3
-        
+
+# Test Add New Column "Age Group"        
 test["Age Group"] = 0
-for i in range(len(test)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
+for i in range(len(test)): # 0~12 : Age Group = 1 ; 12~60 : Age Group = 2 ; 60~ : Age Group = 3
     if test["Age"].iloc[i] < 12:
         test["Age Group"].iloc[i] = 1
     elif test["Age"].iloc[i] >= 12 and test["Age"].iloc[i] < 60:
@@ -271,33 +277,7 @@ for i in range(len(test)): # ~12 : 1 ; 12~60 : 2 ; 60~ : 3
     elif test["Age"].iloc[i] >= 60:
         test["Age Group"].iloc[i] = 3
 
-# %%% Relationship
-# Number of People Who Share One Ticket Number Distribution
-
-plt.bar(train["Ticket"].value_counts().value_counts().index, train["Ticket"].value_counts().value_counts())
-plt.title("Number of People Who Share One Ticket Number Distribution")
-plt.xlabel("Number of People Who Share One Ticket Number")
-plt.ylabel("Number")
-plt.show()
-
-# 先用船票判斷是否一起再用年齡整理關係
-
-# Family = 2
-# Husband(211) and Wife(212)
-# Meaning of the number (eg. 211) : "2" people, case "1", no."1"
-
-# Dad and Child
-
-# Mom and Child
-
-
-# Family = 3
-# Dad and Mom and Child
-
-# %% To Do List
-# ============================================================================
-# 把所有填值都合併在一個for迴圈內
-
+# %% More Preprocessing
 # 將cabin資料整理成有值與缺失值，有的填yes,沒有填no
 def set_Cabin_type(df):
     df.loc[ (df.Cabin.notnull()), 'Cabin' ] = "Yes"
@@ -307,7 +287,7 @@ def set_Cabin_type(df):
 train=set_Cabin_type(train)
 test=set_Cabin_type(test)
 
-#因子化,選取藥用的資料
+#因子化,選取要用的資料
 
 d_Sex=pd.get_dummies(train['Sex'],prefix='Sex')
 d_Pclass=pd.get_dummies(train['Pclass'],prefix='Pclass')
@@ -405,7 +385,7 @@ def save_data(passenger,result):
 # %% Logistic Regression
 # ============================================================================
 
-# igmoid function，最後用y去計算使用sigmoid後的值
+# sigmoid function，最後用y去計算使用sigmoid後的值
 def sigmoid(input):    
     output = 1 / (1 + np.exp(-input))
     return output
