@@ -1,2 +1,2 @@
 # ML_final_project
-A place to save machine learning final project program.
+## The final project of 10920 ESS 427000
